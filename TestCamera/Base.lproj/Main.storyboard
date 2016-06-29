@@ -28,6 +28,9 @@
                                     <action selector="captureVideo:" destination="BYZ-38-t0r" eventType="touchUpInside" id="UmV-pm-36M"/>
                                 </connections>
                             </button>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="dKN-bm-SEl">
+                                <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+                            </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TKH-lb-zaa">
                                 <state key="normal" image="ic_camera_rear_white"/>
                                 <connections>
@@ -38,17 +41,22 @@
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="vif-sm-PbP" firstAttribute="centerX" secondItem="B3A-ha-afc" secondAttribute="centerX" id="7JY-rh-RHt"/>
+                            <constraint firstItem="dKN-bm-SEl" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="181" id="Bfk-bh-J4A"/>
                             <constraint firstItem="TKH-lb-zaa" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="20" id="EoI-iO-MKE"/>
                             <constraint firstItem="vif-sm-PbP" firstAttribute="bottom" secondItem="wfy-db-euE" secondAttribute="top" id="FWO-ZN-IGB"/>
+                            <constraint firstItem="dKN-bm-SEl" firstAttribute="centerX" secondItem="B3A-ha-afc" secondAttribute="centerX" id="JPi-c7-04d"/>
                             <constraint firstItem="vif-sm-PbP" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="SjM-OP-AMh"/>
                             <constraint firstItem="B3A-ha-afc" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Unl-df-gZK"/>
+                            <constraint firstItem="dKN-bm-SEl" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="71" id="Zgf-Wv-hak"/>
                             <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="B3A-ha-afc" secondAttribute="bottom" constant="128" id="Zmh-pS-zRm"/>
                             <constraint firstItem="vif-sm-PbP" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="asf-aD-VNB"/>
                             <constraint firstAttribute="trailingMargin" secondItem="TKH-lb-zaa" secondAttribute="trailing" constant="-5" id="cLn-DC-yKz"/>
+                            <constraint firstAttribute="bottom" secondItem="dKN-bm-SEl" secondAttribute="bottom" constant="266" id="olq-lO-7XD"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="cameraView" destination="vif-sm-PbP" id="G07-Km-r1C"/>
+                        <outlet property="cropCameraView" destination="dKN-bm-SEl" id="iDD-lY-dDO"/>
                         <outlet property="flipCameraButton" destination="TKH-lb-zaa" id="R43-bG-yNt"/>
                         <outlet property="recordButton" destination="B3A-ha-afc" id="hbn-lo-Gfp"/>
                     </connections>

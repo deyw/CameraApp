@@ -8,17 +8,22 @@
 
 import UIKit
 import AVFoundation
+import Photos
 
 class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
     
     let captureVideoSession = AVCaptureSession()
-    var currentDevice:AVCaptureDevice?
     var videoFileOutput:AVCaptureMovieFileOutput?
     var cameraPreviewLayer:AVCaptureVideoPreviewLayer?
     var isRecording = false
     var frontCam = true
+    var photosAsset: PHFetchResult!
+    var assetCollection: PHAssetCollection!
+    var assetCollectionPlaceholder: PHObjectPlaceholder!
+    var albumFound : Bool = false
     
     @IBOutlet weak var cameraView: UIView!
+    @IBOutlet weak var cropCameraView: UIView!
     @IBOutlet weak var recordButton: UIButton!
     @IBOutlet weak var flipCameraButton: UIButton!
     
@@ -30,7 +35,7 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
         view.bringSubviewToFront(recordButton)
         view.bringSubviewToFront(flipCameraButton)
         
-        
+        createAlbum()
         
         // Capture device image
         let screenWidth = Int(UIScreen.mainScreen().bounds.size.width)
@@ -57,17 +62,49 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
     }
     
     
+    func createAlbum() {
+        
+        let fetchOptions = PHFetchOptions()
+        fetchOptions.predicate = NSPredicate(format: "title = %@", "TestCam")
+        let collection : PHFetchResult = PHAssetCollection.fetchAssetCollectionsWithType(.Album, subtype: .Any, options: fetchOptions)
+        
+        
+        //Check return value - If found, then get the first album out
+        if let _: AnyObject = collection.firstObject {
+            self.albumFound = true
+            assetCollection = collection.firstObject as! PHAssetCollection
+        } else {
+            
+            //If not found - Then create a new album
+            PHPhotoLibrary.sharedPhotoLibrary().performChanges({
+                let createAlbumRequest : PHAssetCollectionChangeRequest = PHAssetCollectionChangeRequest.creationRequestForAssetCollectionWithTitle("TestCam")
+                self.assetCollectionPlaceholder = createAlbumRequest.placeholderForCreatedAssetCollection
+                }, completionHandler: { success, error in
+                    self.albumFound = (success ? true: false)
+                    
+                    if (success) {
+                        let collectionFetchResult = PHAssetCollection.fetchAssetCollectionsWithLocalIdentifiers([self.assetCollectionPlaceholder.localIdentifier], options: nil)
+                        print(collectionFetchResult)
+                        self.assetCollection = collectionFetchResult.firstObject as! PHAssetCollection
+                    }
+            })
+        }
+    }
     
     
-    // Blurred original video preview size
+    
+    
     func initCamera() {
         
-        captureVideoSession.sessionPreset = AVCaptureSessionPresetMedium
-        
+        captureVideoSession.sessionPreset = AVCaptureSessionPresetHigh
         cameraPreviewLayer = AVCaptureVideoPreviewLayer(session: captureVideoSession)
         cameraPreviewLayer?.videoGravity = AVLayerVideoGravityResizeAspectFill
-        cameraPreviewLayer?.frame = view.layer.frame
-        cameraView.layer.addSublayer(cameraPreviewLayer!)
+        cameraPreviewLayer?.frame = cropCameraView.bounds
+        
+        cropCameraView.layer.addSublayer(cameraPreviewLayer!)
+        
+                
+        
         
         let devices = AVCaptureDevice.devices()
         
@@ -94,9 +131,9 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
         
         
         
-        print(self.frontCam)
+        print(frontCam)
         
-        if self.frontCam  {
+        if frontCam  {
             do {
                 print("capture by front camera")
                 captureDeviceInput = try AVCaptureDeviceInput(device: frontCamera)
@@ -104,11 +141,11 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
                 print(error)
                 return
             }
-            self.captureVideoSession.addInput(captureDeviceInput)
+            captureVideoSession.addInput(captureDeviceInput)
+            
         }
         
-        
-        if !self.frontCam  {
+        if !frontCam  {
             do {
                 print("capture by back camera")
                 captureDeviceInput = try AVCaptureDeviceInput(device: rearCamera)
@@ -116,7 +153,8 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
                 print(error)
                 return
             }
-            self.captureVideoSession.addInput(captureDeviceInput)
+            captureVideoSession.addInput(captureDeviceInput)
+            
         }
         
         
@@ -124,21 +162,14 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
         
         let blurEffect = UIBlurEffect(style: .Dark)
         let blurEffectView = UIVisualEffectView(effect: blurEffect)
-        blurEffectView.frame = self.view.bounds
+        blurEffectView.frame = view.bounds
+        
+        cameraView.addSubview(blurEffectView)
+        captureVideoSession.startRunning()
+        videoFileOutput = AVCaptureMovieFileOutput()
         
         
-        self.cameraView.addSubview(blurEffectView)
-        self.captureVideoSession.startRunning()
         
-    }
-    
-    
-    func captureOutput(captureOutput: AVCaptureFileOutput!, didStartRecordingToOutputFileAtURL fileURL: NSURL!, fromConnections connections: [AnyObject]!) {
-        return
-    }
-    
-    func captureOutput(captureOutput: AVCaptureFileOutput!, didFinishRecordingToOutputFileAtURL outputFileURL: NSURL!, fromConnections connections: [AnyObject]!, error: NSError!) {
-        return
     }
     
     
@@ -165,17 +196,132 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
     
     
     @IBAction func captureVideo(sender: AnyObject) {
+        
+        
         if !isRecording {
             isRecording = true
+            recordButton.setTitle("Stop", forState: .Normal)
+            
+            
+            captureVideoSession.addOutput(self.videoFileOutput)
+            
+            let paths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+            let documentsDirectory = paths[0] as String
+            let movieFileName = "movie_temp.mp4"
+            let filePath : String? = "\(documentsDirectory)/\(movieFileName)"
+            let fileURL : NSURL = NSURL(fileURLWithPath: filePath!)
+            
+            videoFileOutput!.startRecordingToOutputFileURL(fileURL, recordingDelegate: self)
+            
+            
+            
+            
+        } else {
+            recordButton.setTitle("Record", forState: .Normal)
+            
+            for videoFileOutput in captureVideoSession.outputs {
+                captureVideoSession.removeOutput(videoFileOutput as? AVCaptureOutput)
+            }
+            
+            self.videoFileOutput?.stopRecording()
+            isRecording = false
         }
         
-        let recordingDelegate:AVCaptureFileOutputRecordingDelegate? = self
-        let videoFileOutput = AVCaptureMovieFileOutput()
         
-        let documentsURL = NSFileManager.defaultManager().URLsForDirectory(.DocumentDirectory, inDomains: .UserDomainMask)[0]
-        let filePath = documentsURL.URLByAppendingPathComponent("temp")
+    }
+    
+    // start capture
+    func captureOutput(captureOutput: AVCaptureFileOutput!, didStartRecordingToOutputFileAtURL fileURL: NSURL!, fromConnections connections: [AnyObject]!) {
+        return
+    }
+    
+    // finish capture
+    // Save video to application album
+    func captureOutput(captureOutput: AVCaptureFileOutput!, didFinishRecordingToOutputFileAtURL outputFileURL: NSURL!, fromConnections connections: [AnyObject]!, error: NSError!) {
         
-        videoFileOutput.startRecordingToOutputFileURL(filePath, recordingDelegate: recordingDelegate)
+        
+        // Trying to make and save square(300x300) video
+        let asset : AVURLAsset = AVURLAsset(URL: outputFileURL, options: nil)
+        if let clipVideoTrack: AVAssetTrack = asset.tracksWithMediaType(AVMediaTypeVideo)[0]
+        {
+            
+            let videoComposition: AVMutableVideoComposition = AVMutableVideoComposition()
+            videoComposition.frameDuration = CMTimeMake(1, 60)
+            
+            print(clipVideoTrack.naturalSize.height)
+            
+            videoComposition.renderSize = CGSizeMake(clipVideoTrack.naturalSize.height, clipVideoTrack.naturalSize.height)
+
+            
+            let instruction: AVMutableVideoCompositionInstruction = AVMutableVideoCompositionInstruction()
+            instruction.timeRange = CMTimeRangeMake(kCMTimeZero, CMTimeMakeWithSeconds(60, 30))
+            let transformer: AVMutableVideoCompositionLayerInstruction =
+                AVMutableVideoCompositionLayerInstruction(assetTrack: clipVideoTrack)
+            
+            let t1: CGAffineTransform = CGAffineTransformMakeTranslation(clipVideoTrack.naturalSize.height, -(clipVideoTrack.naturalSize.width - clipVideoTrack.naturalSize.height) / 2 - 60)
+            
+            let t2: CGAffineTransform = CGAffineTransformRotate(t1, CGFloat(M_PI_2))
+            
+            let finalTransform: CGAffineTransform = t2
+            
+            transformer.setTransform(finalTransform, atTime: kCMTimeZero)
+           
+            instruction.layerInstructions = NSArray(object: transformer) as! [AVVideoCompositionLayerInstruction]
+            videoComposition.instructions = NSArray(object: instruction) as! [AVVideoCompositionInstructionProtocol]
+            
+            let exportPath : NSString = NSString(format: "%@%@", NSTemporaryDirectory(), "\(randomStringWithLength(5)).mov")
+            
+            let exportUrl: NSURL = NSURL.fileURLWithPath(exportPath as String)
+           
+            
+            let exporter = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetHighestQuality)
+            exporter!.videoComposition = videoComposition
+            exporter!.outputFileType = AVFileTypeQuickTimeMovie
+            exporter!.outputURL = exportUrl
+            exporter!.exportAsynchronouslyWithCompletionHandler({ () -> Void in
+              
+             let outputURL:NSURL = exporter!.outputURL!;
+                
+                
+                PHPhotoLibrary.sharedPhotoLibrary().performChanges({
+                    let assetRequest = PHAssetChangeRequest.creationRequestForAssetFromVideoAtFileURL(outputURL)
+                    let assetPlaceholder = assetRequest!.placeholderForCreatedAsset
+                    self.photosAsset = PHAsset.fetchAssetsInAssetCollection(self.assetCollection, options: nil)
+                    let albumChangeRequest = PHAssetCollectionChangeRequest(forAssetCollection: self.assetCollection, assets: self.photosAsset)
+                    albumChangeRequest!.addAssets([assetPlaceholder!])
+                    
+                    
+                    
+                    }, completionHandler: { (success, error) in
+                        if success {
+                            print("added video to album")
+                        } else if error != nil{
+                            print("handle error since couldn't save video")
+                        }
+                })
+                
+                                
+            })
+            
+        }
+        return
+    }
+    
+    
+    func randomStringWithLength (len : Int) -> NSString {
+        
+        let letters : NSString = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        
+        let randomString : NSMutableString = NSMutableString(capacity: len)
+        
+        
+        for _ in 0..<len {
+            let length = UInt32 (letters.length)
+            let rand = arc4random_uniform(length)
+            randomString.appendFormat("%C", letters.characterAtIndex(Int(rand)))
+        }
+        
+        return randomString
     }
     
     
