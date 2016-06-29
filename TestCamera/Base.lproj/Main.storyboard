@@ -1,14 +1,16 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11134" systemVersion="15F34" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11129.15" systemVersion="16A201w" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11106"/>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11103.10"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
         <!--View Controller-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="ViewController" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="TestCamera" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
                         <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
@@ -16,11 +18,47 @@
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vif-sm-PbP">
+                                <color key="backgroundColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="B3A-ha-afc">
+                                <state key="normal" title="Record"/>
+                                <connections>
+                                    <action selector="captureVideo:" destination="BYZ-38-t0r" eventType="touchUpInside" id="UmV-pm-36M"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TKH-lb-zaa">
+                                <state key="normal" image="ic_camera_front_white"/>
+                                <connections>
+                                    <action selector="flipCamera:" destination="BYZ-38-t0r" eventType="touchUpInside" id="JH1-xY-UGY"/>
+                                </connections>
+                            </button>
+                        </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="vif-sm-PbP" firstAttribute="centerX" secondItem="B3A-ha-afc" secondAttribute="centerX" id="7JY-rh-RHt"/>
+                            <constraint firstItem="TKH-lb-zaa" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="24" id="EoI-iO-MKE"/>
+                            <constraint firstItem="vif-sm-PbP" firstAttribute="bottom" secondItem="wfy-db-euE" secondAttribute="top" id="FWO-ZN-IGB"/>
+                            <constraint firstItem="vif-sm-PbP" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="SjM-OP-AMh"/>
+                            <constraint firstItem="B3A-ha-afc" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Unl-df-gZK"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="B3A-ha-afc" secondAttribute="bottom" constant="128" id="Zmh-pS-zRm"/>
+                            <constraint firstItem="vif-sm-PbP" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" id="asf-aD-VNB"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="TKH-lb-zaa" secondAttribute="trailing" constant="-5" id="cLn-DC-yKz"/>
+                        </constraints>
                     </view>
+                    <connections>
+                        <outlet property="cameraView" destination="vif-sm-PbP" id="G07-Km-r1C"/>
+                        <outlet property="flipCameraButton" destination="TKH-lb-zaa" id="R43-bG-yNt"/>
+                        <outlet property="recordButton" destination="B3A-ha-afc" id="hbn-lo-Gfp"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="24.800000000000001" y="36.431784107946029"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="ic_camera_front_white" width="24" height="24"/>
+    </resources>
 </document>
