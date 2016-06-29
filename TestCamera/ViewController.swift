@@ -16,25 +16,26 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
     var videoFileOutput:AVCaptureMovieFileOutput?
     var cameraPreviewLayer:AVCaptureVideoPreviewLayer?
     var isRecording = false
-    var frontCam = false
+    var frontCam = true
     
     @IBOutlet weak var cameraView: UIView!
     @IBOutlet weak var recordButton: UIButton!
     @IBOutlet weak var flipCameraButton: UIButton!
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         
+        
         view.bringSubviewToFront(recordButton)
         view.bringSubviewToFront(flipCameraButton)
-        frontCam = false        
-       
+        
+        
         
         // Capture device image
         let screenWidth = Int(UIScreen.mainScreen().bounds.size.width)
         let captureDeviceImageName: String = "capture_device_\(screenWidth)w"
-               
+        
         let captureDeviceImage : UIImageView = {
             let imageView = UIImageView()
             
@@ -51,11 +52,11 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
     }
     
     override func viewDidAppear(animated: Bool) {
-        super.viewDidAppear(animated)
+        
         self.initCamera()
     }
     
-  
+    
     
     
     // Blurred original video preview size
@@ -75,59 +76,59 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
         
         for device in devices {
             if (device.hasMediaType(AVMediaTypeVideo)) {
-            
+                
                 if device.position == AVCaptureDevicePosition.Back {
-                print("rear camera")
-                rearCamera = device as? AVCaptureDevice
+                    rearCamera = device as? AVCaptureDevice
                 }
                 
                 if device.position == AVCaptureDevicePosition.Front {
-                    print("frontcamera")
                     frontCamera = device as? AVCaptureDevice
                 }
                 
             }
         }
         
-            var captureDeviceInput:AVCaptureDeviceInput
         
-        print(frontCam)
         
-            if !frontCam  {
-                do {
-                    captureDeviceInput = try AVCaptureDeviceInput(device: rearCamera)
-                } catch {
-                    print(error)
-                    return
-                }
-                captureVideoSession.addInput(captureDeviceInput)
+        var captureDeviceInput:AVCaptureDeviceInput
+        
+        
+        
+        print(self.frontCam)
+        
+        if self.frontCam  {
+            do {
+                print("capture by front camera")
+                captureDeviceInput = try AVCaptureDeviceInput(device: frontCamera)
+            } catch {
+                print(error)
+                return
             }
-            
-            
-            if frontCam  {
-                do {
-                    captureDeviceInput = try AVCaptureDeviceInput(device: frontCamera)
-                } catch {
-                    print(error)
-                    return
-                }
-                captureVideoSession.addInput(captureDeviceInput)
-                
-            }
-            
+            self.captureVideoSession.addInput(captureDeviceInput)
+        }
         
-    
+        
+        if !self.frontCam  {
+            do {
+                print("capture by back camera")
+                captureDeviceInput = try AVCaptureDeviceInput(device: rearCamera)
+            } catch {
+                print(error)
+                return
+            }
+            self.captureVideoSession.addInput(captureDeviceInput)
+        }
+        
+        
+        
         
         let blurEffect = UIBlurEffect(style: .Dark)
         let blurEffectView = UIVisualEffectView(effect: blurEffect)
-        blurEffectView.frame = view.bounds
+        blurEffectView.frame = self.view.bounds
         
-        cameraView.addSubview(blurEffectView)
         
-        videoFileOutput = AVCaptureMovieFileOutput()
-        captureVideoSession.addOutput(videoFileOutput)
-        
-        captureVideoSession.startRunning()
+        self.cameraView.addSubview(blurEffectView)
+        self.captureVideoSession.startRunning()
         
     }
     
@@ -143,16 +144,20 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
     
     
     @IBAction func flipCamera(sender: AnyObject) {
-
-        if !frontCam {
-            let imageRear = UIImage(named: "ic_camera_rear_white")
+        
+        for input in captureVideoSession.inputs {
+            captureVideoSession.removeInput(input as! AVCaptureInput)
+        }
+        
+        if  frontCam {
+            let imageRear = UIImage(named: "ic_camera_front_white")
             flipCameraButton.setImage(imageRear, forState: .Normal)
-            frontCam = true
+            frontCam = false
             self.initCamera()
         } else {
-            let imageFront = UIImage(named: "ic_camera_front_white")
+            let imageFront = UIImage(named: "ic_camera_rear_white")
             flipCameraButton.setImage(imageFront, forState: .Normal)
-            frontCam = false
+            frontCam = true
             self.initCamera()
         }
         
@@ -172,9 +177,9 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
         
         videoFileOutput.startRecordingToOutputFileURL(filePath, recordingDelegate: recordingDelegate)
     }
-
     
-
-
+    
+    
+    
 }
 

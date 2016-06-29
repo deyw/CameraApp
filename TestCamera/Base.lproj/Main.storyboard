@@ -29,7 +29,7 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="TKH-lb-zaa">
-                                <state key="normal" image="ic_camera_front_white"/>
+                                <state key="normal" image="ic_camera_rear_white"/>
                                 <connections>
                                     <action selector="flipCamera:" destination="BYZ-38-t0r" eventType="touchUpInside" id="JH1-xY-UGY"/>
                                 </connections>
@@ -38,7 +38,7 @@
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="vif-sm-PbP" firstAttribute="centerX" secondItem="B3A-ha-afc" secondAttribute="centerX" id="7JY-rh-RHt"/>
-                            <constraint firstItem="TKH-lb-zaa" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="24" id="EoI-iO-MKE"/>
+                            <constraint firstItem="TKH-lb-zaa" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="20" id="EoI-iO-MKE"/>
                             <constraint firstItem="vif-sm-PbP" firstAttribute="bottom" secondItem="wfy-db-euE" secondAttribute="top" id="FWO-ZN-IGB"/>
                             <constraint firstItem="vif-sm-PbP" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="SjM-OP-AMh"/>
                             <constraint firstItem="B3A-ha-afc" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Unl-df-gZK"/>
@@ -59,6 +59,6 @@
         </scene>
     </scenes>
     <resources>
-        <image name="ic_camera_front_white" width="24" height="24"/>
+        <image name="ic_camera_rear_white" width="24" height="24"/>
     </resources>
 </document>
