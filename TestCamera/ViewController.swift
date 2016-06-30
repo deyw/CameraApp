@@ -17,10 +17,20 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
     var cameraPreviewLayer:AVCaptureVideoPreviewLayer?
     var isRecording = false
     var frontCam = true
+    
+    
+    // saving video to gallery (album)
     var photosAsset: PHFetchResult!
     var assetCollection: PHAssetCollection!
     var assetCollectionPlaceholder: PHObjectPlaceholder!
-    var albumFound : Bool = false
+    var albumFound = false
+    
+    
+    // timer 
+    var timer = NSTimer()
+    var startTime = NSTimeInterval()
+    
+    
     
     @IBOutlet weak var cameraView: UIView!
     @IBOutlet weak var cropCameraView: UIView!
@@ -31,8 +41,6 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
         super.viewDidLoad()
         
         
-        
-        view.bringSubviewToFront(recordButton)
         view.bringSubviewToFront(flipCameraButton)
         
         createAlbum()
@@ -52,18 +60,18 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
         
         view.addSubview(captureDeviceImage)
         
-        
-        
     }
     
+    
     override func viewDidAppear(animated: Bool) {
-        
         self.initCamera()
     }
     
     
+
+    
+    
     func createAlbum() {
-        
         let fetchOptions = PHFetchOptions()
         fetchOptions.predicate = NSPredicate(format: "title = %@", "TestCam")
         let collection : PHFetchResult = PHAssetCollection.fetchAssetCollectionsWithType(.Album, subtype: .Any, options: fetchOptions)
@@ -102,12 +110,9 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
         cameraPreviewLayer?.frame = cropCameraView.bounds
         
         cropCameraView.layer.addSublayer(cameraPreviewLayer!)
-        
                 
         
-        
         let devices = AVCaptureDevice.devices()
-        
         var frontCamera: AVCaptureDevice?
         var rearCamera: AVCaptureDevice?
         
@@ -124,7 +129,6 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
                 
             }
         }
-        
         
         
         var captureDeviceInput:AVCaptureDeviceInput
@@ -155,8 +159,7 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
             }
             captureVideoSession.addInput(captureDeviceInput)
             
-        }
-        
+        }     
         
         
         
@@ -167,7 +170,6 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
         cameraView.addSubview(blurEffectView)
         captureVideoSession.startRunning()
         videoFileOutput = AVCaptureMovieFileOutput()
-        
         
         
     }
@@ -195,14 +197,40 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
     }
     
     
-    @IBAction func captureVideo(sender: AnyObject) {
+    func updateTimer() {
+        let currentTime = NSDate.timeIntervalSinceReferenceDate()
         
+        var elapsedTime: NSTimeInterval = currentTime - startTime
+      
+        let minutes = UInt8(elapsedTime / 60.0)
+        elapsedTime -= (NSTimeInterval(minutes) * 60)
+      
+        let seconds = UInt8(elapsedTime)
+        elapsedTime -= NSTimeInterval(seconds)
+       
+        let miliseconds = UInt8(elapsedTime * 100)
+        
+        let minutesToString = String(format: "%02d", minutes)
+        let secondsToString = String(format: "%02d", seconds)
+        let milisecondsToString = String(format: "%02d", miliseconds)
+   
+        recordButton.setTitle("\(minutesToString):\(secondsToString):\(milisecondsToString)", forState: .Normal)
+    }
+    
+    
+    @IBAction func captureVideo(sender: AnyObject) {       
         
         if !isRecording {
             isRecording = true
-            recordButton.setTitle("Stop", forState: .Normal)
             
+            print(timer.valid)
+            if (!timer.valid) {
             
+                timer = NSTimer.scheduledTimerWithTimeInterval(0.1, target: self, selector: #selector(updateTimer), userInfo: nil, repeats: true)
+                startTime = NSDate.timeIntervalSinceReferenceDate()
+               
+            
+            }
             captureVideoSession.addOutput(self.videoFileOutput)
             
             let paths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
@@ -214,10 +242,13 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
             videoFileOutput!.startRecordingToOutputFileURL(fileURL, recordingDelegate: self)
             
             
-            
-            
         } else {
-            recordButton.setTitle("Record", forState: .Normal)
+            
+            
+            timer.invalidate()
+            
+            
+             recordButton.setTitle("00:00:00", forState: .Normal)
             
             for videoFileOutput in captureVideoSession.outputs {
                 captureVideoSession.removeOutput(videoFileOutput as? AVCaptureOutput)
@@ -248,7 +279,6 @@ class ViewController: UIViewController, AVCaptureFileOutputRecordingDelegate {
             let videoComposition: AVMutableVideoComposition = AVMutableVideoComposition()
             videoComposition.frameDuration = CMTimeMake(1, 60)
             
-            print(clipVideoTrack.naturalSize.height)
             
             videoComposition.renderSize = CGSizeMake(clipVideoTrack.naturalSize.height, clipVideoTrack.naturalSize.height)
 
